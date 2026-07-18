@@ -1,6 +1,9 @@
 from fastapi import FastAPI, HTTPException, status
-from pydantic import BaseModel
-from typing import Optional
+
+from models.task import TaskCreate, TaskUpdate
+from repositories.postgres_repository import PostgresTaskRepository
+from services.task_service import TaskService
+
 
 app = FastAPI(
     title="Task API",
@@ -8,30 +11,20 @@ app = FastAPI(
     version="1.0"
 )
 
-# -----------------------------
-# In-memory task list
-# -----------------------------
-tasks = [
-    {"id": 1, "title": "Study FastAPI", "done": False},
-    {"id": 2, "title": "Complete Assignment", "done": False},
-    {"id": 3, "title": "Watch Movie", "done": True}
-]
 
 # -----------------------------
-# Request Models
+# Repository + Service Setup
 # -----------------------------
-class TaskCreate(BaseModel):
-    title: str
 
+repository = PostgresTaskRepository()
+service = TaskService(repository)
 
-class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    done: Optional[bool] = None
 
 
 # -----------------------------
 # Root Endpoint
 # -----------------------------
+
 @app.get("/", summary="API Information")
 def home():
     return {
@@ -44,109 +37,109 @@ def home():
     }
 
 
+
 # -----------------------------
 # Health Check
 # -----------------------------
+
 @app.get("/health", summary="Health Check")
 def health():
     return {"status": "ok"}
 
 
+
 # -----------------------------
 # Get All Tasks
 # -----------------------------
+
 @app.get("/tasks", summary="Get All Tasks")
 def get_tasks():
-    return tasks
+
+    return service.get_tasks()
+
 
 
 # -----------------------------
-# Get Task by ID
+# Get Task By ID
 # -----------------------------
+
 @app.get("/tasks/{task_id}", summary="Get Task By ID")
 def get_task(task_id: int):
 
-    for task in tasks:
-        if task["id"] == task_id:
-            return task
+    task = service.get_task(task_id)
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Task {task_id} not found"
-    )
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+
+    return task
+
 
 
 # -----------------------------
 # Create Task
 # -----------------------------
-@app.post("/tasks", status_code=status.HTTP_201_CREATED, summary="Create Task")
+
+@app.post(
+    "/tasks",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Task"
+)
 def create_task(task: TaskCreate):
 
-    title = task.title.strip()
+    new_task = service.create_task(task)
 
-    if not title:
+    if not new_task:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Title cannot be empty"
         )
 
-    new_task = {
-        "id": max([t["id"] for t in tasks], default=0) + 1,
-        "title": title,
-        "done": False
-    }
-
-    tasks.append(new_task)
-
     return new_task
+
 
 
 # -----------------------------
 # Update Task
 # -----------------------------
+
 @app.put("/tasks/{task_id}", summary="Update Task")
 def update_task(task_id: int, updated_task: TaskUpdate):
 
-    for task in tasks:
-
-        if task["id"] == task_id:
-
-            if updated_task.title is not None:
-
-                title = updated_task.title.strip()
-
-                if not title:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Title cannot be empty"
-                    )
-
-                task["title"] = title
-
-            if updated_task.done is not None:
-                task["done"] = updated_task.done
-
-            return task
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Task {task_id} not found"
+    task = service.update_task(
+        task_id,
+        updated_task
     )
+
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+
+    return task
+
 
 
 # -----------------------------
 # Delete Task
 # -----------------------------
-@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete Task")
+
+@app.delete(
+    "/tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Task"
+)
 def delete_task(task_id: int):
 
-    for task in tasks:
+    deleted = service.delete_task(task_id)
 
-        if task["id"] == task_id:
-            tasks.remove(task)
-            return
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Task {task_id} not found"
-    )
+    return

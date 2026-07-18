@@ -1,103 +1,260 @@
-# Task API
+# Task API - FlyRank Backend AI Internship (BE-04)
 
-A simple RESTful Task Management API built using **FastAPI**. This project demonstrates CRUD (Create, Read, Update, Delete) operations using an in-memory task list without a database.
+A CRUD Task Management API built using **FastAPI**, containerized with **Docker**, and connected to **PostgreSQL** with persistent storage.
+
+This project demonstrates replacing an in-memory storage system with a real PostgreSQL repository while keeping the API routes and service layer unchanged.
+
+---
 
 ## Features
 
-- Create a new task
+- Create tasks
 - View all tasks
-- View a task by ID
-- Update an existing task
-- Delete a task
-- Health check endpoint
-- Interactive Swagger UI documentation
+- View task by ID
+- Update tasks
+- Delete tasks
+- PostgreSQL database integration
+- Dockerized application and database
+- Persistent database storage using Docker volumes
+- Environment-based database configuration
 
-## Technologies Used
+---
 
-- Python 3
+## Tech Stack
+
 - FastAPI
-- Uvicorn
+- Python 3.13
+- PostgreSQL 16
+- Docker
+- Docker Compose
+- Psycopg2
 - Pydantic
 
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/Arithra2006/flyrank-ai-internship-projects.git
-```
-
-Go to the project folder:
-
-```bash
-cd flyrank-ai-internship-projects
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Run the Project
-
-```bash
-uvicorn main:app --reload
-```
-
-The API will run at:
-
-```
-http://127.0.0.1:8000
-```
-
-Swagger Documentation:
-
-```
-http://127.0.0.1:8000/docs
-```
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | `/` | API information |
-| GET | `/health` | Health check |
-| GET | `/tasks` | Get all tasks |
-| GET | `/tasks/{task_id}` | Get a task by ID |
-| POST | `/tasks` | Create a new task |
-| PUT | `/tasks/{task_id}` | Update a task |
-| DELETE | `/tasks/{task_id}` | Delete a task |
-
-## Example Request
-
-**POST /tasks**
-
-```json
-{
-    "title": "Buy Milk"
-}
-```
-
-## Example Response
-
-```json
-{
-    "id": 4,
-    "title": "Buy Milk",
-    "done": false
-}
-```
+---
 
 ## Project Structure
 
 ```
+task-api/
+
+│
 ├── main.py
+├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
-├── README.md
-└── .gitignore
+├── .env
+├── .env.example
+│
+├── database/
+│   └── init.sql
+│
+├── models/
+│   └── task.py
+│
+├── repositories/
+│   ├── task_repository.py
+│   ├── memory_repository.py
+│   └── postgres_repository.py
+│
+└── services/
+    └── task_service.py
 ```
 
-## Author
+---
 
-**Arithra Mayur**
+## Architecture
+
+The application follows a layered architecture:
+
+```
+API Routes
+      |
+      |
+Service Layer
+      |
+      |
+Repository Interface
+      |
+      |
+PostgreSQL Repository
+      |
+      |
+PostgreSQL Database
+```
+
+The application was originally built using an in-memory repository.
+
+For this assignment, the storage layer was replaced with PostgreSQL without modifying the API routes or service logic.
+
+---
+
+## Environment Configuration
+
+Database credentials are stored using environment variables.
+
+Example `.env`:
+
+```
+POSTGRES_USER=taskuser
+POSTGRES_PASSWORD=taskpassword
+POSTGRES_DB=taskdb
+
+DATABASE_URL=postgresql://taskuser:taskpassword@db:5432/taskdb
+```
+
+The `.env` file is ignored by Git.
+
+A safe template is provided:
+
+```
+.env.example
+```
+
+---
+
+## Running the Application
+
+### Requirements
+
+Install:
+
+- Docker Desktop
+
+---
+
+### Start Application + Database
+
+Run:
+
+```bash
+docker compose up --build
+```
+
+This starts both:
+
+```
+FastAPI Application
+        |
+        |
+PostgreSQL Database
+```
+
+The PostgreSQL database uses a Docker volume to preserve data.
+
+---
+
+## API Documentation
+
+After starting the application, open:
+
+```
+http://localhost:8000/docs
+```
+
+Swagger UI provides interactive API testing.
+
+---
+
+## Database Initialization
+
+The database table is automatically created using:
+
+```
+database/init.sql
+```
+
+The table contains:
+
+- id
+- title
+- done
+
+---
+
+## Persistence Verification
+
+Persistence was verified using these steps:
+
+1. Start the application:
+
+```bash
+docker compose up
+```
+
+2. Create a task using the API:
+
+Endpoint:
+
+```
+POST /tasks
+```
+
+Example:
+
+```json
+{
+    "title": "Persistence Test"
+}
+```
+
+3. Stop containers:
+
+```bash
+docker compose down
+```
+
+4. Start again:
+
+```bash
+docker compose up
+```
+
+5. Retrieve tasks:
+
+```
+GET /tasks
+```
+
+The previously created task was still available after restarting the application and containers.
+
+This confirms that PostgreSQL data persists using the Docker volume.
+
+---
+
+## Repository Switching
+
+Before:
+
+```
+API Routes
+     |
+Service Layer
+     |
+Memory Repository
+```
+
+After:
+
+```
+API Routes
+     |
+Service Layer
+     |
+PostgreSQL Repository
+     |
+PostgreSQL Database
+```
+
+The repository implementation was replaced while keeping the service layer and API routes unchanged.
+
+This proves that the application follows a clean storage abstraction.
+
+---
+
+## Future Improvements
+
+- Add Redis caching
+- Add database indexes
+- Analyze queries using EXPLAIN ANALYZE
+- Add authentication
+- Add automated tests
