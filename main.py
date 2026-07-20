@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 
 from models.task import TaskCreate, TaskUpdate
-from repositories.postgres_repository import PostgresTaskRepository
+from repositories.sqlite_repository import SQLiteTaskRepository
 from services.task_service import TaskService
 
 
@@ -16,7 +16,7 @@ app = FastAPI(
 # Repository + Service Setup
 # -----------------------------
 
-repository = PostgresTaskRepository()
+repository = SQLiteTaskRepository()
 service = TaskService(repository)
 
 

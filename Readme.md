@@ -1,52 +1,45 @@
-# Task API - FlyRank Backend AI Internship (BE-04)
+Task API - FlyRank Backend AI Internship (BE-02)
 
-A CRUD Task Management API built using **FastAPI**, containerized with **Docker**, and connected to **PostgreSQL** with persistent storage.
+A CRUD Task Management API built using FastAPI and SQLite.
 
-This project demonstrates replacing an in-memory storage system with a real PostgreSQL repository while keeping the API routes and service layer unchanged.
+This project demonstrates replacing an in-memory storage system with a real SQLite database while keeping the API routes and service layer unchanged. The API remains exactly the same, while the storage layer is replaced with a persistent database.
 
 ---
 
-## Features
+Features
 
 - Create tasks
 - View all tasks
 - View task by ID
 - Update tasks
 - Delete tasks
-- PostgreSQL database integration
-- Dockerized application and database
-- Persistent database storage using Docker volumes
-- Environment-based database configuration
+- SQLite database integration
+- Automatic database creation
+- Automatic table creation
+- Initial sample tasks inserted only on the first run
+- Persistent data storage across server restarts
 
 ---
 
-## Tech Stack
+Tech Stack
 
 - FastAPI
 - Python 3.13
-- PostgreSQL 16
-- Docker
-- Docker Compose
-- Psycopg2
+- SQLite
+- sqlite3 (Python Standard Library)
 - Pydantic
 
 ---
 
-## Project Structure
+Project Structure
 
-```
 task-api/
 
 │
 ├── main.py
-├── Dockerfile
-├── docker-compose.yml
 ├── requirements.txt
-├── .env
-├── .env.example
-│
-├── database/
-│   └── init.sql
+├── README.md
+├── tasks.db          # Automatically created
 │
 ├── models/
 │   └── task.py
@@ -54,207 +47,183 @@ task-api/
 ├── repositories/
 │   ├── task_repository.py
 │   ├── memory_repository.py
-│   └── postgres_repository.py
+│   └── sqlite_repository.py
 │
 └── services/
     └── task_service.py
-```
 
 ---
 
-## Architecture
+Architecture
 
-The application follows a layered architecture:
+The application follows a layered architecture.
 
-```
 API Routes
-      |
-      |
+      │
+      ▼
 Service Layer
-      |
-      |
+      │
+      ▼
 Repository Interface
-      |
-      |
-PostgreSQL Repository
-      |
-      |
-PostgreSQL Database
-```
+      │
+      ▼
+SQLite Repository
+      │
+      ▼
+SQLite Database (tasks.db)
 
-The application was originally built using an in-memory repository.
+The API layer is completely independent of the database implementation.
 
-For this assignment, the storage layer was replaced with PostgreSQL without modifying the API routes or service logic.
-
----
-
-## Environment Configuration
-
-Database credentials are stored using environment variables.
-
-Example `.env`:
-
-```
-POSTGRES_USER=taskuser
-POSTGRES_PASSWORD=taskpassword
-POSTGRES_DB=taskdb
-
-DATABASE_URL=postgresql://taskuser:taskpassword@db:5432/taskdb
-```
-
-The `.env` file is ignored by Git.
-
-A safe template is provided:
-
-```
-.env.example
-```
+The storage layer can be replaced without changing any API endpoints.
 
 ---
 
-## Running the Application
+Why SQLite?
 
-### Requirements
+SQLite was chosen because:
 
-Install:
-
-- Docker Desktop
-
----
-
-### Start Application + Database
-
-Run:
-
-```bash
-docker compose up --build
-```
-
-This starts both:
-
-```
-FastAPI Application
-        |
-        |
-PostgreSQL Database
-```
-
-The PostgreSQL database uses a Docker volume to preserve data.
+- It requires no separate database server.
+- The database is stored in a single file ("tasks.db").
+- It is lightweight and easy to set up.
+- It is ideal for learning SQL and backend development.
+- It satisfies the assignment requirement for persistent local storage.
 
 ---
 
-## API Documentation
+Database
+
+The application automatically creates:
+
+tasks.db
+
+on the first run.
+
+It also automatically creates the "tasks" table if it does not already exist.
+
+Schema:
+
+Column| Type
+id| INTEGER PRIMARY KEY AUTOINCREMENT
+title| TEXT
+done| BOOLEAN
+
+If the table is empty, three sample tasks are inserted automatically.
+
+---
+
+Running the Application
+
+Requirements
+
+- Python 3.13+
+- pip
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+Start the server:
+
+uvicorn main:app --reload
+
+The database file ("tasks.db") will be created automatically if it does not already exist.
+
+---
+
+API Documentation
 
 After starting the application, open:
 
-```
 http://localhost:8000/docs
-```
 
-Swagger UI provides interactive API testing.
-
----
-
-## Database Initialization
-
-The database table is automatically created using:
-
-```
-database/init.sql
-```
-
-The table contains:
-
-- id
-- title
-- done
+Swagger UI provides interactive API documentation and testing.
 
 ---
 
-## Persistence Verification
+API Endpoints
 
-Persistence was verified using these steps:
+Method| Endpoint| Description
+GET| /tasks| Get all tasks
+GET| /tasks/{id}| Get a task by ID
+POST| /tasks| Create a new task
+PUT| /tasks/{id}| Update a task
+DELETE| /tasks/{id}| Delete a task
 
-1. Start the application:
+---
 
-```bash
-docker compose up
-```
+Persistence Verification
 
-2. Create a task using the API:
+Persistence was verified using the following steps:
 
-Endpoint:
+1. Start the server.
+2. Create a new task using:
 
-```
 POST /tasks
-```
+
+3. Stop the server.
+4. Restart the server.
+5. Retrieve all tasks using:
+
+GET /tasks
+
+The previously created task is still available, confirming that data persists after server restarts.
+
+---
+
+Example SQL Query
+
+The following SQL query was executed to retrieve all tasks:
+
+SELECT * FROM tasks;
+
+---
+
+Database Screenshot
+
+Add a screenshot of your SQLite database viewer (DB Browser for SQLite) here.
 
 Example:
 
-```json
-{
-    "title": "Persistence Test"
-}
-```
-
-3. Stop containers:
-
-```bash
-docker compose down
-```
-
-4. Start again:
-
-```bash
-docker compose up
-```
-
-5. Retrieve tasks:
-
-```
-GET /tasks
-```
-
-The previously created task was still available after restarting the application and containers.
-
-This confirms that PostgreSQL data persists using the Docker volume.
+docs/database-screenshot.png
 
 ---
 
-## Repository Switching
+Repository Switching
 
 Before:
 
-```
 API Routes
-     |
+      │
+      ▼
 Service Layer
-     |
+      │
+      ▼
 Memory Repository
-```
 
 After:
 
-```
 API Routes
-     |
+      │
+      ▼
 Service Layer
-     |
-PostgreSQL Repository
-     |
-PostgreSQL Database
-```
+      │
+      ▼
+SQLite Repository
+      │
+      ▼
+SQLite Database
 
-The repository implementation was replaced while keeping the service layer and API routes unchanged.
-
-This proves that the application follows a clean storage abstraction.
+Only the repository implementation changed. The API routes and service layer remained unchanged.
 
 ---
 
-## Future Improvements
+Future Improvements
 
-- Add Redis caching
-- Add database indexes
-- Analyze queries using EXPLAIN ANALYZE
+- Search tasks using SQL ("LIKE")
+- Filter completed tasks
+- Sort tasks alphabetically
+- Add task statistics endpoint
+- Add timestamps ("created_at", "updated_at")
+- Migrate to PostgreSQL
 - Add authentication
 - Add automated tests

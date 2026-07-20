@@ -1,173 +1,132 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import sqlite3
 
 from repositories.task_repository import TaskRepository
 
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-
-class PostgresTaskRepository(TaskRepository):
+class SQLiteTaskRepository(TaskRepository):
 
     def __init__(self):
-
-        self.connection_url = os.getenv(
-            "DATABASE_URL"
-        )
-
+        self.db_name = "tasks.db"
+        self._initialize_database()
 
     def get_connection(self):
+        conn = sqlite3.connect(self.db_name)
+        conn.row_factory = sqlite3.Row
+        return conn
 
-        return psycopg2.connect(
-            self.connection_url
-        )
-
-
-    def get_all(self):
-
-        conn = self.get_connection()
-        cursor = conn.cursor(
-            cursor_factory=RealDictCursor
-        )
-
-        cursor.execute(
-            "SELECT * FROM tasks ORDER BY id"
-        )
-
-        tasks = cursor.fetchall()
-
-        cursor.close()
-        conn.close()
-
-        return tasks
-
-
-
-    def get_by_id(self, task_id):
-
-        conn = self.get_connection()
-        cursor = conn.cursor(
-            cursor_factory=RealDictCursor
-        )
-
-        cursor.execute(
-            "SELECT * FROM tasks WHERE id=%s",
-            (task_id,)
-        )
-
-        task = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
-
-        return task
-
-
-
-    def create(self, task):
-
-        conn = self.get_connection()
-        cursor = conn.cursor(
-            cursor_factory=RealDictCursor
-        )
-
-        cursor.execute(
-            """
-            INSERT INTO tasks(title, done)
-            VALUES(%s, %s)
-            RETURNING *
-            """,
-            (
-                task["title"],
-                False
-            )
-        )
-
-        new_task = cursor.fetchone()
-
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        return new_task
-
-
-
-    def update(self, task_id, updated_task):
-
-        conn = self.get_connection()
-        cursor = conn.cursor(
-            cursor_factory=RealDictCursor
-        )
-
-
-        if "title" in updated_task:
-
-            cursor.execute(
-                """
-                UPDATE tasks
-                SET title=%s
-                WHERE id=%s
-                RETURNING *
-                """,
-                (
-                    updated_task["title"],
-                    task_id
-                )
-            )
-
-        elif "done" in updated_task:
-
-            cursor.execute(
-                """
-                UPDATE tasks
-                SET done=%s
-                WHERE id=%s
-                RETURNING *
-                """,
-                (
-                    updated_task["done"],
-                    task_id
-                )
-            )
-
-        else:
-            return self.get_by_id(task_id)
-
-
-        task = cursor.fetchone()
-
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        return task
-
-
-
-    def delete(self, task_id):
-
+    def _initialize_database(self):
         conn = self.get_connection()
         cursor = conn.cursor()
 
+        # Create table if it doesn't exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                done BOOLEAN NOT NULL
+            )
+        """)
+
+        # Insert sample tasks only if table is empty
+        cursor.execute("SELECT COUNT(*) FROM tasks")
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            cursor.executemany(
+                "INSERT INTO tasks (title, done) VALUES (?, ?)",
+                [
+                    ("Learn FastAPI", False),
+                    ("Build CRUD API", False),
+                    ("Connect SQLite Database", False),
+                ]
+            )
+
+        conn.commit()
+        conn.close()
+
+    def get_all(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM tasks ORDER BY id")
+
+        tasks = [dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+        return tasks
+
+    def get_by_id(self, task_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute(
-            """
-            DELETE FROM tasks
-            WHERE id=%s
-            """,
+            "SELECT * FROM tasks WHERE id = ?",
+            (task_id,)
+        )
+
+        row = cursor.fetchone()
+
+        conn.close()
+
+        return dict(row) if row else None
+
+    def create(self, task):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO tasks (title, done) VALUES (?, ?)",
+            (task["title"], False)
+        )
+
+        task_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return self.get_by_id(task_id)
+
+    def update(self, task_id, updated_task):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        if "title" in updated_task:
+            cursor.execute(
+                "UPDATE tasks SET title=? WHERE id=?",
+                (updated_task["title"], task_id)
+            )
+
+        elif "done" in updated_task:
+            cursor.execute(
+                "UPDATE tasks SET done=? WHERE id=?",
+                (updated_task["done"], task_id)
+            )
+
+        else:
+            conn.close()
+            return self.get_by_id(task_id)
+
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return None
+
+        conn.close()
+
+        return self.get_by_id(task_id)
+
+    def delete(self, task_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM tasks WHERE id=?",
             (task_id,)
         )
 
         deleted = cursor.rowcount > 0
 
         conn.commit()
-
-        cursor.close()
         conn.close()
 
         return deleted
