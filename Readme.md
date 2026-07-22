@@ -227,3 +227,62 @@ Future Improvements
 - Migrate to PostgreSQL
 - Add authentication
 - Add automated tests
+
+FL-02 — Prompting Fundamentals on Real Tasks
+
+Overview
+
+This project explores how structured prompt engineering techniques improve AI-assisted backend development. The exercise was completed using a real FastAPI backend task: building a CRUD API with SQLite persistence for managing tasks.
+
+Objective
+
+The goal was to compare a basic prompt with progressively improved prompts and observe how different prompting techniques affect the quality, structure, clarity, and reliability of AI-generated software.
+
+Prompting Techniques
+
+Six prompt iterations were planned:
+
+1. Naive Prompt — Established a baseline using a simple one-line request.
+2. Role Assignment — Asked the AI to act as a senior backend engineer.
+3. Context & Motivation — Provided project context, learning goals, and future requirements.
+4. Few-Shot Examples — Provided examples demonstrating the expected project structure and explanations.
+5. Output Structure — Defined a strict format for the AI's response.
+6. Step Decomposition — Broke the development task into smaller, sequential steps.
+
+Task
+
+«Build a FastAPI CRUD API with SQLite persistence for managing tasks.»
+
+The generated project included components for database configuration, SQLAlchemy models, Pydantic schemas, API routes, dependencies, requirements, and documentation.
+
+Key Findings
+
+- Adding a specific role improved technical explanations and professional framing.
+- Providing context and motivation helped the AI align its response with project goals.
+- Few-shot examples improved adherence to the desired format but did not guarantee implementation correctness.
+- Explicit output structures made AI responses easier to review.
+- Step decomposition helped organize complex software tasks into smaller, verifiable stages.
+- AI-generated code still requires human review, testing, and validation regardless of prompt quality.
+
+Cross-Model Evaluation
+
+The final prompt was evaluated across Claude and ChatGPT to compare differences in implementation guidance, reasoning, structure, and failure points.
+
+The exercise demonstrated that effective prompt engineering is not simply about writing longer prompts. The best results came from combining clear requirements, relevant context, examples, structured outputs, and verification steps.
+
+Reusable Prompt Template
+
+A generalized prompt template was created for backend development tasks, including:
+
+- Role and technical expertise
+- Project context and motivation
+- Functional requirements
+- Technical requirements
+- Expected project structure
+- Implementation steps
+- Testing and verification
+- Known limitations
+
+Outcome
+
+This exercise developed practical experience in prompt engineering, AI-assisted backend development, output evaluation, and cross-model comparison using a real software engineering task.
