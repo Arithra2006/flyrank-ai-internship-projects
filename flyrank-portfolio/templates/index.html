@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Name | Portfolio</title>
+<meta name="description" content="Portfolio website with AI Career Study Agent" />
+
+<!-- Open Graph / Social preview -->
+<meta property="og:title" content="Your Name | Portfolio" />
+<meta property="og:description" content="Portfolio website featuring an AI Career Study Agent" />
+<meta property="og:type" content="website" />
+
+<link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+<!-- Google Analytics (Week 9) -->
+<!-- Replace G-XXXXXXXXXX with your real Measurement ID from analytics.google.com -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">YourName</div>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#career-agent">AI Career Agent</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HOME -->
+<section id="home" class="hero">
+  <div class="hero-content">
+    <h1>Hi, I'm <span class="highlight">Your Name</span></h1>
+    <p>Aspiring Software Engineer / Data Scientist — building projects that solve real problems.</p>
+    <a href="/static/resume.pdf" download class="btn btn-primary">Download Resume</a>
+    <a href="#career-agent" class="btn btn-secondary">Try AI Career Agent</a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="section">
+  <h2>About Me</h2>
+  <p>
+    I'm a student passionate about technology, AI, and building things that
+    help people. This portfolio itself is one of my projects — it uses a
+    real AI-powered backend to give personalized career guidance.
+  </p>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" class="section skills-section">
+  <h2>Skills</h2>
+  <div class="skills-grid">
+    <div class="skill-card">HTML / CSS / JavaScript</div>
+    <div class="skill-card">Python</div>
+    <div class="skill-card">Flask</div>
+    <div class="skill-card">Git & GitHub</div>
+    <div class="skill-card">SQL</div>
+    <div class="skill-card">REST APIs</div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="section">
+  <h2>Projects</h2>
+  <div class="projects-grid">
+    <div class="project-card">
+      <h3>AI Career Study Agent</h3>
+      <p>This portfolio's flagship feature — generates a personalized career roadmap using a live AI backend.</p>
+    </div>
+    <div class="project-card">
+      <h3>Project Two</h3>
+      <p>Describe another project here.</p>
+    </div>
+    <div class="project-card">
+      <h3>Project Three</h3>
+      <p>Describe another project here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AI CAREER STUDY AGENT -->
+<section id="career-agent" class="section career-section">
+  <h2>AI Career Study Agent</h2>
+  <p class="section-sub">Fill in your details and get a personalized roadmap, skills list, project ideas, resources, and interview tips.</p>
+
+  <form id="career-form" class="career-form">
+    <div class="form-row">
+      <label for="name">Name (optional)</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Priya" />
+    </div>
+
+    <div class="form-row">
+      <label for="degree">Current Degree</label>
+      <input type="text" id="degree" name="degree" placeholder="e.g. B.Tech Computer Science" required />
+    </div>
+
+    <div class="form-row">
+      <label for="year">Year of Study</label>
+      <input type="text" id="year" name="year" placeholder="e.g. 2nd Year" required />
+    </div>
+
+    <div class="form-row">
+      <label for="goal">Career Goal</label>
+      <input type="text" id="goal" name="goal" placeholder="e.g. Data Scientist, SWE, Bank PO" required />
+    </div>
+
+    <div class="form-row">
+      <label for="skills">Current Skills</label>
+      <input type="text" id="skills" name="skills" placeholder="e.g. Python, basic SQL" />
+    </div>
+
+    <div class="form-row">
+      <label for="questions">Any specific questions?</label>
+      <textarea id="questions" name="questions" placeholder="e.g. Should I learn Java or Python first?"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="generate-btn">Generate Career Roadmap</button>
+  </form>
+
+  <div id="loading" class="loading hidden">Generating your roadmap... please wait.</div>
+  <div id="error-box" class="error-box hidden"></div>
+  <div id="result-box" class="result-box hidden"></div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="section contact-section">
+  <h2>Contact Me</h2>
+  <form id="contact-form" class="contact-form">
+    <div class="form-row">
+      <label for="c-name">Name</label>
+      <input type="text" id="c-name" name="name" required />
+    </div>
+    <div class="form-row">
+      <label for="c-email">Email</label>
+      <input type="email" id="c-email" name="email" required />
+    </div>
+    <div class="form-row">
+      <label for="c-message">Message</label>
+      <textarea id="c-message" name="message" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send Message</button>
+  </form>
+  <div id="contact-status" class="contact-status hidden"></div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 Your Name. All rights reserved.</p>
+  <!-- FlyRank Graduate Badge (Week 9) -->
+  <a href="https://flyrank.com/verify/your-id" target="_blank" rel="noopener" class="flyrank-badge">
+    <img src="{{ url_for('static', filename='images/flyrank-badge.png') }}" alt="FlyRank Graduate Badge" height="40" />
+  </a>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

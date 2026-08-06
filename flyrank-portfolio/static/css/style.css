@@ -1,0 +1,215 @@
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --bg: #0f172a;
+  --bg-light: #f8fafc;
+  --text-dark: #1e293b;
+  --text-light: #f1f5f9;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text-dark);
+  background: var(--bg-light);
+  line-height: 1.6;
+}
+
+/* NAVBAR */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: var(--bg);
+  color: var(--text-light);
+  flex-wrap: wrap;
+}
+
+.nav-brand { font-weight: 700; font-size: 1.3rem; }
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: #a5b4fc; }
+
+/* HERO */
+.hero {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, var(--bg) 0%, #1e1b4b 100%);
+  color: var(--text-light);
+  padding: 2rem;
+}
+
+.hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+.highlight { color: #a5b4fc; }
+.hero p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; }
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  margin: 0.3rem;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.btn:hover { transform: translateY(-2px); }
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: transparent; color: var(--text-light); border: 2px solid var(--text-light); }
+
+/* SECTIONS */
+.section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.section h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--bg);
+}
+
+.section-sub { margin-bottom: 2rem; color: #475569; }
+
+/* SKILLS */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.skill-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* PROJECTS */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.project-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.project-card h3 { margin-bottom: 0.5rem; color: var(--primary); }
+
+/* CAREER FORM */
+.career-section { background: #eef2ff; border-radius: 16px; }
+
+.career-form, .contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+}
+
+.form-row { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.form-row label { font-weight: 600; font-size: 0.9rem; }
+
+.form-row input, .form-row textarea {
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-row textarea { min-height: 90px; resize: vertical; }
+
+.loading {
+  margin-top: 1.5rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.error-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+}
+
+.result-box {
+  margin-top: 2rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.hidden { display: none; }
+
+/* CONTACT */
+.contact-status {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 8px;
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* FOOTER */
+.footer {
+  background: var(--bg);
+  color: var(--text-light);
+  text-align: center;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.flyrank-badge img { border-radius: 6px; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .navbar { flex-direction: column; gap: 1rem; }
+  .hero h1 { font-size: 1.9rem; }
+  .section { padding: 3rem 1.2rem; }
+}
