@@ -27,6 +27,7 @@ app = Flask(__name__)
 CORS(app)  # allows the frontend (even if hosted elsewhere) to call this backend
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+print("KEY LOADED:", GROQ_API_KEY)
 
 if not GROQ_API_KEY:
     print("WARNING: GROQ_API_KEY is not set. Create a .env file with your key.")
