@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/leadplatform
+      - SECRET_KEY=change-this-to-a-long-random-string-before-deploying
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - ALLOWED_ORIGINS=*
+      - PUBLIC_BASE_URL=http://localhost:8000
+      - SUBMISSION_RATE_LIMIT=5/minute
+    depends_on:
+      - db
+    volumes:
+      - .:/code
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=leadplatform
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

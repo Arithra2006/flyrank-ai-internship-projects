@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Lead Platform Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#f9fafb; margin:0; color:#111827; }
+  header { background:#111827; color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:18px; margin:0; }
+  #logoutBtn { background:transparent; border:1px solid #4b5563; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; }
+  main { max-width:960px; margin:24px auto; padding:0 16px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin-bottom:20px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; }
+  .stat { background:#f3f4f6; border-radius:8px; padding:14px; text-align:center; }
+  .stat .num { font-size:24px; font-weight:700; }
+  .stat .label { font-size:12px; color:#6b7280; }
+  input, textarea, select { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; margin-bottom:10px; }
+  label { font-size:12px; color:#374151; }
+  button.primary { background:#4f46e5; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; font-weight:600; }
+  button.secondary { background:#e5e7eb; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; margin-right:6px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid #e5e7eb; }
+  .pill { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size:11px; }
+  .error { color:#dc2626; font-size:13px; }
+  .hidden { display:none; }
+  code { background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:12px; word-break:break-all; }
+  #authView { max-width:380px; margin:60px auto; }
+  .tab-btn { background:none; border:none; padding:10px 14px; cursor:pointer; font-size:14px; color:#6b7280; border-bottom:2px solid transparent; }
+  .tab-btn.active { color:#4f46e5; border-color:#4f46e5; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Lead Platform</h1>
+  <button id="logoutBtn" class="hidden">Log out</button>
+</header>
+
+<main>
+
+  <!-- AUTH VIEW -->
+  <div id="authView">
+    <div class="card">
+      <div>
+        <button class="tab-btn active" data-tab="login">Log in</button>
+        <button class="tab-btn" data-tab="register">Register</button>
+      </div>
+
+      <div id="loginForm">
+        <label>Email</label>
+        <input type="email" id="loginEmail" />
+        <label>Password</label>
+        <input type="password" id="loginPassword" />
+        <button class="primary" onclick="login()">Log in</button>
+        <p id="loginError" class="error"></p>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <label>Full name</label>
+        <input type="text" id="regName" />
+        <label>Email</label>
+        <input type="email" id="regEmail" />
+        <label>Password (min 8 chars)</label>
+        <input type="password" id="regPassword" />
+        <button class="primary" onclick="register()">Create account</button>
+        <p id="regError" class="error"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboardView" class="hidden">
+
+    <div class="card">
+      <h2>Overview</h2>
+      <div class="grid" id="summaryGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Create a widget</h2>
+      <label>Widget name</label>
+      <input type="text" id="wName" placeholder="e.g. Homepage Contact Form" />
+      <label>Title shown to visitors</label>
+      <input type="text" id="wTitle" value="Get in touch" />
+      <label>Description</label>
+      <input type="text" id="wDesc" placeholder="Optional description" />
+      <label>Button text</label>
+      <input type="text" id="wButton" value="Submit" />
+      <label>Primary color</label>
+      <input type="color" id="wColor" value="#4f46e5" style="height:38px;" />
+      <button class="primary" onclick="createWidget()">Create widget</button>
+      <p id="widgetError" class="error"></p>
+    </div>
+
+    <div class="card">
+      <h2>Your widgets</h2>
+      <div id="widgetList"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem("lw_token") || null;
+
+// --- Tabs ---
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("loginForm").classList.toggle("hidden", btn.dataset.tab !== "login");
+    document.getElementById("registerForm").classList.toggle("hidden", btn.dataset.tab !== "register");
+  });
+});
+
+function showDashboard() {
+  document.getElementById("authView").classList.add("hidden");
+  document.getElementById("dashboardView").classList.remove("hidden");
+  document.getElementById("logoutBtn").classList.remove("hidden");
+  loadSummary();
+  loadWidgets();
+}
+
+function showAuth() {
+  document.getElementById("authView").classList.remove("hidden");
+  document.getElementById("dashboardView").classList.add("hidden");
+  document.getElementById("logoutBtn").classList.add("hidden");
+}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("lw_token");
+  token = null;
+  showAuth();
+});
+
+async function register() {
+  const body = {
+    full_name: document.getElementById("regName").value,
+    email: document.getElementById("regEmail").value,
+    password: document.getElementById("regPassword").value
+  };
+  const res = await fetch(`${API}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  const errEl = document.getElementById("regError");
+  if (!res.ok) { errEl.textContent = data.detail || "Registration failed"; return; }
+  errEl.textContent = "";
+  document.getElementById("loginEmail").value = body.email;
+  document.querySelector('[data-tab="login"]').click();
+}
+
+async function login() {
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  const form = new URLSearchParams();
+  form.append("username", email);
+  form.append("password", password);
+
+  const res = await fetch(`${API}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form
+  });
+  const data = await res.json();
+  const errEl = document.getElementById("loginError");
+  if (!res.ok) { errEl.textContent = data.detail || "Login failed"; return; }
+  errEl.textContent = "";
+  token = data.access_token;
+  localStorage.setItem("lw_token", token);
+  showDashboard();
+}
+
+function authHeaders() {
+  return { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
+}
+
+async function loadSummary() {
+  const res = await fetch(`${API}/api/dashboard/summary`, { headers: authHeaders() });
+  if (!res.ok) { if (res.status === 401) { showAuth(); } return; }
+  const data = await res.json();
+  const grid = document.getElementById("summaryGrid");
+  grid.innerHTML = `
+    <div class="stat"><div class="num">${data.total_widgets}</div><div class="label">Widgets</div></div>
+    <div class="stat"><div class="num">${data.total_submissions}</div><div class="label">Submissions</div></div>
+    <div class="stat"><div class="num">${data.total_spam_blocked}</div><div class="label">Spam blocked</div></div>
+  `;
+}
+
+async function loadWidgets() {
+  const res = await fetch(`${API}/api/widgets`, { headers: authHeaders() });
+  if (!res.ok) return;
+  const widgets = await res.json();
+  const listEl = document.getElementById("widgetList");
+  if (widgets.length === 0) {
+    listEl.innerHTML = "<p>No widgets yet. Create one above.</p>";
+    return;
+  }
+  listEl.innerHTML = "";
+  for (const w of widgets) {
+    const embedRes = await fetch(`${API}/api/widgets/${w.id}/embed-code`, { headers: authHeaders() });
+    const embedData = await embedRes.json();
+    const div = document.createElement("div");
+    div.style.borderBottom = "1px solid #e5e7eb";
+    div.style.padding = "12px 0";
+    div.innerHTML = `
+      <strong>${w.name}</strong> <span class="pill">${w.widget_type}</span>
+      ${w.is_active ? "" : '<span class="pill" style="background:#fee2e2;color:#b91c1c;">inactive</span>'}
+      <p style="margin:6px 0;"><code>${embedData.embed_code}</code></p>
+      <button class="secondary" onclick="viewSubmissions('${w.id}', '${w.name.replace(/'/g, "\\'")}')">View submissions</button>
+      <button class="secondary" onclick="deleteWidget('${w.id}')">Delete</button>
+      <div id="subs-${w.id}"></div>
+    `;
+    listEl.appendChild(div);
+  }
+}
+
+async function createWidget() {
+  const body = {
+    name: document.getElementById("wName").value,
+    title: document.getElementById("wTitle").value,
+    description: document.getElementById("wDesc").value,
+    button_text: document.getElementById("wButton").value,
+    primary_color: document.getElementById("wColor").value,
+    fields: ["name", "email", "message"],
+    allowed_domains: ["*"]
+  };
+  const res = await fetch(`${API}/api/widgets`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  const errEl = document.getElementById("widgetError");
+  if (!res.ok) { errEl.textContent = data.detail || "Failed to create widget"; return; }
+  errEl.textContent = "";
+  document.getElementById("wName").value = "";
+  loadWidgets();
+  loadSummary();
+}
+
+async function deleteWidget(id) {
+  if (!confirm("Delete this widget? This cannot be undone.")) return;
+  await fetch(`${API}/api/widgets/${id}`, { method: "DELETE", headers: authHeaders() });
+  loadWidgets();
+  loadSummary();
+}
+
+async function viewSubmissions(id, name) {
+  const res = await fetch(`${API}/api/dashboard/widgets/${id}/submissions`, { headers: authHeaders() });
+  const subs = await res.json();
+  const el = document.getElementById(`subs-${id}`);
+  if (subs.length === 0) {
+    el.innerHTML = "<p><em>No submissions yet.</em></p>";
+    return;
+  }
+  let rows = subs.map(s => `
+    <tr>
+      <td>${new Date(s.created_at).toLocaleString()}</td>
+      <td>${Object.values(s.data).join(" / ")}</td>
+      <td>${s.city || ""} ${s.country || ""}</td>
+      <td>${s.ip_address || ""}</td>
+    </tr>
+  `).join("");
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>Date</th><th>Data</th><th>Location</th><th>IP</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// Init
+if (token) { showDashboard(); } else { showAuth(); }
+</script>
+
+</body>
+</html>

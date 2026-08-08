@@ -1,0 +1,187 @@
+{
+  "info": {
+    "name": "Embeddable Widget & Lead-Capture Platform",
+    "description": "Test collection. Set base_url and token variables as you go.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" },
+    { "key": "widget_id", "value": "" },
+    { "key": "widget_public_key", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"owner@example.com\",\"password\":\"password123\",\"full_name\":\"Widget Owner\"}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "owner@example.com" },
+                { "key": "password", "value": "password123" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Widgets",
+      "item": [
+        {
+          "name": "Create Widget",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/widgets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Homepage Contact Form\",\"widget_type\":\"contact_form\",\"title\":\"Get in touch\",\"description\":\"We usually reply within a day\",\"button_text\":\"Send\",\"primary_color\":\"#4f46e5\",\"fields\":[\"name\",\"email\",\"message\"],\"allowed_domains\":[\"*\"]}"
+            }
+          }
+        },
+        {
+          "name": "List Widgets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/widgets"
+          }
+        },
+        {
+          "name": "Get Widget",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/widgets/{{widget_id}}"
+          }
+        },
+        {
+          "name": "Update Widget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/widgets/{{widget_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Updated title\"}"
+            }
+          }
+        },
+        {
+          "name": "Get Embed Code",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/widgets/{{widget_id}}/embed-code"
+          }
+        },
+        {
+          "name": "Delete Widget",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/widgets/{{widget_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Get Widget Config",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/public/widgets/{{widget_public_key}}/config"
+          }
+        },
+        {
+          "name": "Submit Lead",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/public/widgets/{{widget_public_key}}/submit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"data\":{\"name\":\"Jane Doe\",\"email\":\"jane@example.com\",\"message\":\"Interested in your product\"},\"website\":\"\"}"
+            }
+          }
+        },
+        {
+          "name": "Submit Lead (Spam Test - honeypot filled)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/public/widgets/{{widget_public_key}}/submit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"data\":{\"name\":\"Bot\",\"email\":\"bot@spam.com\",\"message\":\"spam\"},\"website\":\"http://spam.com\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/dashboard/summary"
+          }
+        },
+        {
+          "name": "Widget Submissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/dashboard/widgets/{{widget_id}}/submissions"
+          }
+        },
+        {
+          "name": "Widget Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/api/dashboard/widgets/{{widget_id}}/analytics"
+          }
+        }
+      ]
+    }
+  ]
+}
